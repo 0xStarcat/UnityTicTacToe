@@ -30,6 +30,11 @@ public class EvaluatedTrack
         Track = track;
         Score = score;
     }
+
+    public List<GameObject> AvailableSpaces()
+    {
+        return Track.FindAll(space => ComputerPlayer.SpaceHasValue(space: space, value: "")).ToList();
+    }
 }
 
 public class ComputerPlayer : MonoBehaviour
@@ -148,15 +153,32 @@ public class ComputerPlayer : MonoBehaviour
     {
         // Choose the best evaluated track (All open = 2, two open = 1, else = 0)
         // Choose the best space in that track (center = 2, corner = 1, side = 0)
-
-        var bestTrack = evaluatedTracks.OrderByDescending(track => track.Score).ToList()[0];
-        UnityEngine.Debug.Log("BEST: " + bestTrack.Score);
+        var random = new System.Random();
+        List<EvaluatedTrack> bestTrackList = evaluatedTracks.GroupBy(track => track.Score) // Group tracks by score [[2], [1, 1], [0, 0]]
+                                                            .Select(group => group.ToList())
+                                                            .ToList()
+                                                            .OrderByDescending(group => group[0].Score) // order groups by score
+                                                            .ToList()[0];
+        UnityEngine.Debug.Log("BTL: " + bestTrackList.Count);
+        
+        EvaluatedTrack bestTrack = bestTrackList.FindAll(track => track.AvailableSpaces().Count > 0) // With available spaces
+                                                .OrderByDescending(track => track.AvailableSpaces()
+                                                                                 .Max(space => space.GetComponent<GridSpace>().Score))
+                                                                                 .ToList()[0]; // Track with the highest scored available square
+        UnityEngine.Debug.Log("BEST TRACK: " + bestTrack.Score);
+        foreach (var item in bestTrack.Track)
+        {
+            UnityEngine.Debug.Log(item);
+            
+        }
+        
         
         var bestMoveList = bestTrack.Track.FindAll(space => SpaceHasValue(space: space, value: "")).OrderByDescending(space => space.GetComponent<GridSpace>().Score).ToList();
 
         if (bestMoveList.Count > 0)
         {
             CreateMove(bestMoveList[0], SMART_MOVE_PRIORITY, "smart move");
+            UnityEngine.Debug.Log("BEST MOVE: " + bestMoveList[0].GetComponent<GridSpace>().Score);
         }
     }
 
@@ -174,7 +196,7 @@ public class ComputerPlayer : MonoBehaviour
         return track.Find(gridSpace => SpaceHasValue(space: gridSpace, value: value));
     }
 
-    bool SpaceHasValue(GameObject space, string value)
+    public static bool SpaceHasValue(GameObject space, string value)
     {
         return space.GetComponentInChildren<Text>().text == value;
     }
