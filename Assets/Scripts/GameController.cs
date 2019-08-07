@@ -247,7 +247,10 @@ public class GameController : MonoBehaviour
     {
         for (int i = 0; i < buttonList.Length; i++)
         {
-            buttonList[i].GetComponent<Button>().interactable = toggle;
+            if (buttonList[i].GetComponentInChildren<Text>().text == "")
+            {   // Only execute on buttons that aren't already taken.
+                buttonList[i].GetComponent<Button>().interactable = toggle;
+            }
         }
     }
 

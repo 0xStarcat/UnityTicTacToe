@@ -4,10 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class GridSpace : MonoBehaviour
-{
+{   
+    public const int CENTER_SQUARE_SCORE = 2;
+    public const int CORNER_SQUARE_SCORE = 1;
+    public const int SIDE_SQUARE_SCORE = 0;
+    
     public Button button;
     public Text buttonText;
-    public string playerSide;
+    public int Score;
 
     private GameController gameController;
 
