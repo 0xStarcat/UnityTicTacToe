@@ -150,7 +150,11 @@ public class ComputerPlayer : MonoBehaviour
     }
 
     void EvaluateSmartMove()
-    {
+    {   
+        // TODO - solve for opponent corner start.
+        // If opponent can exploit 4 open tracks -
+        // Force their hand into a side square - square that only benefits 1 open track.
+
         // Choose the best evaluated track (All open = 2, two open = 1, else = 0)
         // Choose the best space in that track (center = 2, corner = 1, side = 0)
         var random = new System.Random();
