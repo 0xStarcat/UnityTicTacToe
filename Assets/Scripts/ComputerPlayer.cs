@@ -68,6 +68,7 @@ public class ComputerPlayer : MonoBehaviour
     public const int CHECK_MOVE_SCORE = BASE_MOVE_SCORE * POSSIBLE_MOVES * 2;
     public const int PREVENT_LOSS_MOVE_SCORE = BASE_MOVE_SCORE * POSSIBLE_MOVES * 3;
     public const int WIN_MOVE_SCORE = BASE_MOVE_SCORE * POSSIBLE_MOVES * POSSIBLE_MOVES;
+    public const int LOSS_MOVE_SCORE = 0;
 
     public const string BASE_MOVE_TYPE = "BASE_MOVE";
     public const string CHECK_MOVE_TYPE = "CHECK_MOVE";
@@ -268,16 +269,18 @@ public class ComputerPlayer : MonoBehaviour
         return true;
     }
 
-    public List<List<GameObject>> CreateMoveModel(GridSpace space)
+    public List<List<GameObject>> CreateMoveModel(GridSpace space, string playerMarker)
     {
         List<List<GameObject>> clonedBoard = gameController.gridList.ConvertAll(el => el);
-
+        // Doesn't actually do a deep clone;
         foreach (var track in clonedBoard.FindAll(track => track.Exists(gridSpace => gridSpace.GetComponent<GridSpace>().id == space.id)))
         {
 
             var gridSpace = track.Find(gs => gs.GetComponent<GridSpace>().id == space.id).GetComponent<GridSpace>();
 
-            gridSpace.AddGameMarker(gameController.GetCurrentPlayer().gameMarker);
+            // Actually adds the game marker
+            // This is a bug
+            gridSpace.AddGameMarker(playerMarker);
         }
 
         return clonedBoard;
@@ -287,53 +290,72 @@ public class ComputerPlayer : MonoBehaviour
     public int CalculateDecisionScore(GridSpace space, string currentPlayerMarker)
     {
         string opponentMarker = gameController.GetOpponentGameMarker(currentPlayerMarker);
-        int ownMoveScore = EvaluateMove(CreateMoveModel(space), space, currentPlayerMarker).Sum(move => move.Score);
+        int ownMoveScore = EvaluateMove(CreateMoveModel(space, currentPlayerMarker), space, currentPlayerMarker);
         int opponentPossibleMovesScore = 0;
         List<GameObject> availableSpaces = GetAvailableSpaces();
         
         foreach (var gridSpaceObject in availableSpaces.FindAll(sp => sp.GetComponent<GridSpace>().id != space.id))
         {
             GridSpace gridSpace = gridSpaceObject.GetComponent<GridSpace>();
-            opponentPossibleMovesScore += EvaluateMove(CreateMoveModel(gridSpace), gridSpace, opponentMarker).Sum(m => m.Score);
+            opponentPossibleMovesScore += EvaluateMove(CreateMoveModel(gridSpace, opponentMarker), gridSpace, opponentMarker);
         }        
 
         return ownMoveScore - opponentPossibleMovesScore;
     }
 
-    public List<Move> EvaluateMove(List<List<GameObject>> clonedGameBoard, GridSpace space, string currentPlayerMarker)
+    public int EvaluateMove(List<List<GameObject>> clonedGameBoard, GridSpace space, string currentPlayerMarker)
     {
         // Calculates the score of a move 
         // based on its position in every track it occupies
 
-
-        List<Move> scoreList = new List<Move>();
         string opponentMarker = gameController.GetOpponentGameMarker(currentPlayerMarker);
+        List<Move> scoreList = new List<Move>();
+        
 
         // Clones game grid and adds the move into it
         foreach (var track in clonedGameBoard.FindAll(track => track.Exists(gridSpace => gridSpace.GetComponent<GridSpace>().id == space.id)))
-        {
-            
-            var gridSpace = track.Find(gs => gs.GetComponent<GridSpace>().id == space.id).GetComponent<GridSpace>();
-            
+        {            
 
             if (TrackHasN(track: track, has: currentPlayerMarker, n: 3))
             {   // Win
-                scoreList.Add(new Move(track: track, space: gridSpace, score: WIN_MOVE_SCORE, type: WIN_MOVE_TYPE));
+                scoreList.Add(new Move(track: track, space: space, score: WIN_MOVE_SCORE, type: WIN_MOVE_TYPE));
+                return scoreList.Sum(m => m.Score);
             }
             else if (TrackHasN(track: track, has: opponentMarker, n: 2))
             {   // prevent loss
-                scoreList.Add(new Move(track: track, space: gridSpace, score: PREVENT_LOSS_MOVE_SCORE, type: PREVENT_LOSS_MOVE_TYPE));
+                scoreList.Add(new Move(track: track, space: space, score: PREVENT_LOSS_MOVE_SCORE, type: PREVENT_LOSS_MOVE_TYPE));
             }
             else if (TrackHasN(track: track, has: currentPlayerMarker, n: 2) && TrackHasN(track: track, has: "", n: 1))
             {   // check opponent
-                scoreList.Add(new Move(track: track, space: gridSpace, score: CHECK_MOVE_SCORE, type: CHECK_MOVE_TYPE));
+                scoreList.Add(new Move(track: track, space: space, score: CHECK_MOVE_SCORE, type: CHECK_MOVE_TYPE));
             }
             else if (TrackHasN(track: track, has: "", n: 2))
             {
-                scoreList.Add(new Move(track: track, space: gridSpace, score: BASE_MOVE_SCORE, type: BASE_MOVE_TYPE));
+                scoreList.Add(new Move(track: track, space: space, score: BASE_MOVE_SCORE, type: BASE_MOVE_TYPE));
             }
         }
-        return scoreList;
+
+        if (MoveWillLose(clonedGameBoard, space, opponentMarker))
+        {
+            return LOSS_MOVE_SCORE;
+        }
+
+        return scoreList.Sum(m => m.Score);
+    }
+
+    public bool MoveWillLose(List<List<GameObject>> clonedGameBoard, GridSpace space, string opponentMarker)
+    {
+
+        foreach (var track in clonedGameBoard)
+        {
+            if (TrackHasN(track: track, has: opponentMarker, n: 2) && TrackHasN(track: track, has: "", n: 1))
+            {
+                
+                return true;
+            }
+        }
+
+        return false;
     }
     
 }
