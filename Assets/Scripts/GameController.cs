@@ -139,7 +139,7 @@ public class GameController : MonoBehaviour
         gridList.Add(new List<GameObject>(diagonal2));
     }
 
-    private void SetHumanSide(string humanSide)
+    public void SetHumanSide(string humanSide)
     {   // Called from Player Button
         if (humanSide == "X") 
         { 

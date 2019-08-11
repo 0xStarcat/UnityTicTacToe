@@ -227,5 +227,10 @@ public class ComputerPlayer : MonoBehaviour
     {
         return true;
     }
+
+    public int CalculateMoveScore(GridSpace space)
+    {
+        return 0;
+    }
     
 }

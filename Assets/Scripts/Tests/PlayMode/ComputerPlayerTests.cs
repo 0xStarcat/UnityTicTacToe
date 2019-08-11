@@ -8,12 +8,29 @@ namespace Tests
 {
     public class ComputerPlayerTests
     {
-        ComputerPlayer computerPlayer;
+        private ComputerPlayer computerPlayer;
+        private GameController gameController;
+        private GameObject gameGameObject;
         // A Test behaves as an ordinary method
+        
         [SetUp]
         public void Setup()
         {
-            computerPlayer = new ComputerPlayer();
+            gameGameObject = MonoBehaviour.Instantiate(Resources.Load<GameObject>("Prefabs/Game"));
+            computerPlayer = gameGameObject.GetComponentInChildren<ComputerPlayer>();
+            gameController = gameGameObject.GetComponentInChildren<GameController>();
+            
+        }
+
+        [TearDown]
+        public void Teardown()
+        {
+            Object.Destroy(gameGameObject);
+        }
+
+        private void SetupHumanVsComputerGame()
+        {
+            gameController.SetHumanSide("X");
         }
 
         [Test]
@@ -21,6 +38,28 @@ namespace Tests
         {
             Assert.True(computerPlayer.Test());
             // Use the Assert class to test conditions
+        }
+
+        [Test]
+        public void CalculateMoveScore1()
+        {
+            SetupHumanVsComputerGame();
+            //   | |
+            //   | |
+            //   | |
+            Assert.AreEqual(3, computerPlayer.CalculateMoveScore(gameController.buttonList[0].GetComponent<GridSpace>()));
+        }
+
+        [Test]
+        public void CalculateMoveScore2()
+        {
+            SetupHumanVsComputerGame();
+            // X | |
+            //   | |
+            //   | |
+
+            gameController.buttonList[0].GetComponent<GridSpace>().SetSpace();
+
         }
 
         // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
