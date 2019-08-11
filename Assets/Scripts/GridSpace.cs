@@ -12,19 +12,26 @@ public class GridSpace : MonoBehaviour
     public Button button;
     public Text buttonText;
     public int Score;
+    public int id;
 
     private GameController gameController;
 
     public void SetSpace() 
     {
-        buttonText.text = gameController.GetCurrentPlayer().gameMarker;
+        AddGameMarker(gameController.GetCurrentPlayer().gameMarker);
         button.interactable = false;
         gameController.EndTurn();
+    }
 
+    public void AddGameMarker(string gameMarker)
+    {
+        buttonText.text = gameMarker;
     }
 
     public void SetGameController(GameController controller)
     {
+
         gameController = controller;
+        id = Array.IndexOf(gameController.buttonList, this.gameObject);
     }
 }

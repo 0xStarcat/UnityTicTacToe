@@ -230,7 +230,20 @@ public class ComputerPlayer : MonoBehaviour
 
     public int CalculateMoveScore(GridSpace space)
     {
-        return 0;
+        var score = 0;
+        var clonedGridList = gameController.gridList.ConvertAll(el => el);
+        foreach (var track in clonedGridList.FindAll(track => track.Exists(gridSpace => gridSpace.GetComponent<GridSpace>().id == space.id)))
+        {
+            
+            var gridSpace = track.Find(gs => gs.GetComponent<GridSpace>().id == space.id);
+            gridSpace.GetComponent<GridSpace>().AddGameMarker(gameController.GetCurrentPlayer().gameMarker);
+
+            if (TrackHasN(track: track, has: "", n: 2))
+            {
+                score += 1;
+            }
+        }
+        return score;
     }
     
 }

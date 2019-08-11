@@ -47,18 +47,44 @@ namespace Tests
             //   | |
             //   | |
             //   | |
-            Assert.AreEqual(3, computerPlayer.CalculateMoveScore(gameController.buttonList[0].GetComponent<GridSpace>()));
+
+            //   | |
+            //   |X|
+            //   | |
+
+            Assert.AreEqual(4, computerPlayer.CalculateMoveScore(gameController.buttonList[4].GetComponent<GridSpace>()));
+
         }
 
         [Test]
         public void CalculateMoveScore2()
         {
             SetupHumanVsComputerGame();
-            // X | |
+            //   | |
             //   | |
             //   | |
 
-            gameController.buttonList[0].GetComponent<GridSpace>().SetSpace();
+            //  X| |
+            //   | |
+            //   | |
+
+            Assert.AreEqual(3, computerPlayer.CalculateMoveScore(gameController.buttonList[0].GetComponent<GridSpace>()));
+        }
+
+
+        [Test]
+        public void CalculateMoveScore3()
+        {
+            SetupHumanVsComputerGame();
+            //   | |
+            //   | |
+            //   | |
+
+            //   | |
+            //  X| |
+            //   | |
+
+            Assert.AreEqual(2, computerPlayer.CalculateMoveScore(gameController.buttonList[3].GetComponent<GridSpace>()));
 
         }
 
