@@ -14,6 +14,7 @@ public class GridSpace : MonoBehaviour
     public Text buttonText;
     public int Score;
     public int id;
+    public string Value;
 
     private GameController gameController;
 
@@ -27,6 +28,7 @@ public class GridSpace : MonoBehaviour
     public void AddGameMarker(string gameMarker)
     {
         buttonText.text = gameMarker;
+        Value = gameMarker;
     }
 
     public void SetGameController(GameController controller)

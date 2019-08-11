@@ -20,6 +20,8 @@ public class ComputerMove
     }
 }
 
+
+
 public class EvaluatedTrack
 {
     public List<GameObject> Track;
@@ -37,6 +39,22 @@ public class EvaluatedTrack
     }
 }
 
+public class Move
+{   
+    public List<GameObject> Track;
+    public GridSpace Space;
+    public int Score;
+    public string Type;
+
+    public Move(List<GameObject> track, GridSpace space, int score, string type)
+    {
+        Track = track;
+        Space = space;
+        Score = score;
+        Type = type;
+    }
+}
+
 public class ComputerPlayer : MonoBehaviour
 {
     public GameController gameController;
@@ -45,6 +63,16 @@ public class ComputerPlayer : MonoBehaviour
     public const int SMART_MOVE_PRIORITY = 1;
     public const int PREVENT_LOSS_MOVE_PRIORITY = 99;
     public const int WIN_MOVE_PRIORITY = 100;
+    public const int BASE_MOVE_SCORE = 1;
+    public const int POSSIBLE_MOVES = 9;
+    public const int CHECK_MOVE_SCORE = BASE_MOVE_SCORE * POSSIBLE_MOVES * 2;
+    public const int PREVENT_LOSS_MOVE_SCORE = BASE_MOVE_SCORE * POSSIBLE_MOVES * 3;
+    public const int WIN_MOVE_SCORE = BASE_MOVE_SCORE * POSSIBLE_MOVES * POSSIBLE_MOVES;
+
+    public const string BASE_MOVE_TYPE = "BASE_MOVE";
+    public const string CHECK_MOVE_TYPE = "CHECK_MOVE";
+    public const string PREVENT_LOSS_MOVE_TYPE = "PREVENT_LOSS_MOVE";
+    public const string WIN_MOVE_TYPE = "WIN_MOVE";
 
     List<GameObject> availableSpaces = new List<GameObject>();
     List<GameObject> occupiedSpaces = new List<GameObject>();
@@ -52,12 +80,9 @@ public class ComputerPlayer : MonoBehaviour
 
     public void BeginComputerTurn()
     {
-        
-
         EvaluateBoard();
         EvaluateAllPossibleMoves();
-        MakeBestMove();
-        
+        MakeBestMove();   
     }
 
     void EvaluateAllPossibleMoves()
@@ -72,6 +97,21 @@ public class ComputerPlayer : MonoBehaviour
     void CreateMove(GameObject square, int priority, string comment)
     {
         possibleMoves.Add(new ComputerMove(square, priority, comment));
+    }
+
+    List<GameObject> GetAvailableSpaces()
+    {   
+        List<GameObject> availableSpaces = new List<GameObject>();
+        foreach (var space in gameController.buttonList)
+        {
+            var text = space.GetComponentInChildren<Text>().text;
+            if (string.IsNullOrEmpty(text))
+            {
+                availableSpaces.Add(space);
+            }
+        }
+
+        return availableSpaces;
     }
 
     void EvaluateBoard()
@@ -228,22 +268,72 @@ public class ComputerPlayer : MonoBehaviour
         return true;
     }
 
-    public int CalculateMoveScore(GridSpace space)
+    public List<List<GameObject>> CreateMoveModel(GridSpace space)
     {
-        var score = 0;
-        var clonedGridList = gameController.gridList.ConvertAll(el => el);
-        foreach (var track in clonedGridList.FindAll(track => track.Exists(gridSpace => gridSpace.GetComponent<GridSpace>().id == space.id)))
+        List<List<GameObject>> clonedBoard = gameController.gridList.ConvertAll(el => el);
+
+        foreach (var track in clonedBoard.FindAll(track => track.Exists(gridSpace => gridSpace.GetComponent<GridSpace>().id == space.id)))
+        {
+
+            var gridSpace = track.Find(gs => gs.GetComponent<GridSpace>().id == space.id).GetComponent<GridSpace>();
+
+            gridSpace.AddGameMarker(gameController.GetCurrentPlayer().gameMarker);
+        }
+
+        return clonedBoard;
+
+    }
+
+    public int CalculateDecisionScore(GridSpace space, string currentPlayerMarker)
+    {
+        string opponentMarker = gameController.GetOpponentGameMarker(currentPlayerMarker);
+        int ownMoveScore = EvaluateMove(CreateMoveModel(space), space, currentPlayerMarker).Sum(move => move.Score);
+        int opponentPossibleMovesScore = 0;
+        List<GameObject> availableSpaces = GetAvailableSpaces();
+        
+        foreach (var gridSpaceObject in availableSpaces.FindAll(sp => sp.GetComponent<GridSpace>().id != space.id))
+        {
+            GridSpace gridSpace = gridSpaceObject.GetComponent<GridSpace>();
+            opponentPossibleMovesScore += EvaluateMove(CreateMoveModel(gridSpace), gridSpace, opponentMarker).Sum(m => m.Score);
+        }        
+
+        return ownMoveScore - opponentPossibleMovesScore;
+    }
+
+    public List<Move> EvaluateMove(List<List<GameObject>> clonedGameBoard, GridSpace space, string currentPlayerMarker)
+    {
+        // Calculates the score of a move 
+        // based on its position in every track it occupies
+
+
+        List<Move> scoreList = new List<Move>();
+        string opponentMarker = gameController.GetOpponentGameMarker(currentPlayerMarker);
+
+        // Clones game grid and adds the move into it
+        foreach (var track in clonedGameBoard.FindAll(track => track.Exists(gridSpace => gridSpace.GetComponent<GridSpace>().id == space.id)))
         {
             
-            var gridSpace = track.Find(gs => gs.GetComponent<GridSpace>().id == space.id);
-            gridSpace.GetComponent<GridSpace>().AddGameMarker(gameController.GetCurrentPlayer().gameMarker);
+            var gridSpace = track.Find(gs => gs.GetComponent<GridSpace>().id == space.id).GetComponent<GridSpace>();
+            
 
-            if (TrackHasN(track: track, has: "", n: 2))
+            if (TrackHasN(track: track, has: currentPlayerMarker, n: 3))
+            {   // Win
+                scoreList.Add(new Move(track: track, space: gridSpace, score: WIN_MOVE_SCORE, type: WIN_MOVE_TYPE));
+            }
+            else if (TrackHasN(track: track, has: opponentMarker, n: 2))
+            {   // prevent loss
+                scoreList.Add(new Move(track: track, space: gridSpace, score: PREVENT_LOSS_MOVE_SCORE, type: PREVENT_LOSS_MOVE_TYPE));
+            }
+            else if (TrackHasN(track: track, has: currentPlayerMarker, n: 2) && TrackHasN(track: track, has: "", n: 1))
+            {   // check opponent
+                scoreList.Add(new Move(track: track, space: gridSpace, score: CHECK_MOVE_SCORE, type: CHECK_MOVE_TYPE));
+            }
+            else if (TrackHasN(track: track, has: "", n: 2))
             {
-                score += 1;
+                scoreList.Add(new Move(track: track, space: gridSpace, score: BASE_MOVE_SCORE, type: BASE_MOVE_TYPE));
             }
         }
-        return score;
+        return scoreList;
     }
     
 }

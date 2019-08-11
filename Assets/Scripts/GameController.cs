@@ -58,6 +58,11 @@ public class GameController : MonoBehaviour
         return currentPlayer;
     }
 
+    public void SetSpaceAtIndex(int index, string gameMarker)
+    {
+        buttonList[index].GetComponent<GridSpace>().AddGameMarker(gameMarker);
+    }
+
     public Player GetOpponent(Player player)
     {
         if (player.gameMarker == "X")
@@ -69,6 +74,18 @@ public class GameController : MonoBehaviour
         } else 
         {
             return null;
+        }
+    }
+
+    public string GetOpponentGameMarker(string gameMarker)
+    {
+        if (gameMarker == "X")
+        {
+            return "O";
+        } else if (gameMarker == "O") {
+            return "X";
+        } else {
+            return "";
         }
     }
 
