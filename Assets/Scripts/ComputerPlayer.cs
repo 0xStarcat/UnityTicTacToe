@@ -222,5 +222,10 @@ public class ComputerPlayer : MonoBehaviour
         
         bestMove.Square.GetComponent<GridSpace>().SetSpace();
     }
+
+    public bool Test()
+    {
+        return true;
+    }
     
 }
