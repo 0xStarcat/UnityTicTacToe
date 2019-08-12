@@ -24,6 +24,7 @@ public class PlayerColor
 
 public class GameController : MonoBehaviour
 {
+    public GameBoard gameBoard;
     public GameObject[] buttonList;
     public List<List<GameObject>> gridList;
     public GameObject gameOverPanel;
@@ -47,11 +48,18 @@ public class GameController : MonoBehaviour
         ConstructGrid();
         SetGameControllerReferenceOnButtons();
         RestartGame();
+
+        gameBoard = new GameBoard();
     }
 
     ////
     // GET / SET
     ////
+
+    public void MakeMove(int index, string gameMarker)
+    {
+        gameBoard.MakeMove(index, gameMarker);
+    }
 
     public Player GetCurrentPlayer()
     {

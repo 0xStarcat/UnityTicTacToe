@@ -35,13 +35,6 @@ namespace Tests
         }
 
         [Test]
-        public void ComputerPlayerTestsSimplePasses()
-        {
-            Assert.True(computerPlayer.Test());
-            // Use the Assert class to test conditions
-        }
-
-        [Test]
         public void EvaluateMove1a()
         {
             SetupHumanVsComputerGame();
@@ -52,8 +45,7 @@ namespace Tests
             //   | |
             //   |X|
             //   | |
-            var space = gameController.buttonList[4].GetComponent<GridSpace>();
-            Assert.AreEqual(4, computerPlayer.EvaluateMove(computerPlayer.CreateMoveModel(space, "X"), space, "X"));
+            Assert.AreEqual(4, computerPlayer.EvaluateMove(computerPlayer.CreateMoveModel(4, "X", gameController.gameBoard.Spaces), 4, "X"));
 
         }
 
@@ -68,8 +60,7 @@ namespace Tests
             //  X| |
             //   | |
             //   | |
-            var space = gameController.buttonList[0].GetComponent<GridSpace>();
-            Assert.AreEqual(3, computerPlayer.EvaluateMove(computerPlayer.CreateMoveModel(space, "X"), space, "X"));
+            Assert.AreEqual(3, computerPlayer.EvaluateMove(computerPlayer.CreateMoveModel(0, "X", gameController.gameBoard.Spaces), 0, "X"));
         }
 
 
@@ -84,8 +75,7 @@ namespace Tests
             //   | |
             //  X| |
             //   | |
-            var space = gameController.buttonList[3].GetComponent<GridSpace>();
-            Assert.AreEqual(2, computerPlayer.EvaluateMove(computerPlayer.CreateMoveModel(space, "X"), space, "X"));
+            Assert.AreEqual(2, computerPlayer.EvaluateMove(computerPlayer.CreateMoveModel(3, "X", gameController.gameBoard.Spaces), 3, "X"));
 
         }
 
@@ -93,10 +83,10 @@ namespace Tests
         public void EvaluateMove2a()
         {
             SetupHumanVsComputerGame();
-            gameController.SetSpaceAtIndex(0, "X");
-            gameController.SetSpaceAtIndex(4, "O");
-            gameController.SetSpaceAtIndex(8, "X");
-            gameController.SetSpaceAtIndex(2, "O");
+            gameController.MakeMove(0, "X");
+            gameController.MakeMove(4, "O");
+            gameController.MakeMove(8, "X");
+            gameController.MakeMove(2, "O");
 
             //  X| |O
             //   |O|
@@ -107,8 +97,7 @@ namespace Tests
             //   | |X
 
             // Loss move
-            var space = gameController.buttonList[3].GetComponent<GridSpace>();
-            Assert.AreEqual(0, computerPlayer.EvaluateMove(computerPlayer.CreateMoveModel(space, "X"), space, "X"));
+            Assert.AreEqual(0, computerPlayer.EvaluateMove(computerPlayer.CreateMoveModel(3, "X", gameController.gameBoard.Spaces), 3, "X"));
 
         }
 
@@ -116,10 +105,10 @@ namespace Tests
         public void EvaluateMove2b()
         {
             SetupHumanVsComputerGame();
-            gameController.SetSpaceAtIndex(0, "X");
-            gameController.SetSpaceAtIndex(4, "O");
-            gameController.SetSpaceAtIndex(8, "X");
-            gameController.SetSpaceAtIndex(2, "O");
+            gameController.MakeMove(0, "X");
+            gameController.MakeMove(4, "O");
+            gameController.MakeMove(8, "X");
+            gameController.MakeMove(2, "O");
 
             //  X| |O
             //   |O|
@@ -130,8 +119,7 @@ namespace Tests
             //  X| |X
 
             // 63 = 18 * 2 (2 checks) + 27 (1 prevent loss)
-            var space = gameController.buttonList[6].GetComponent<GridSpace>();
-            var moveEval = computerPlayer.EvaluateMove(computerPlayer.CreateMoveModel(space, "X"), space, "X");
+            var moveEval = computerPlayer.EvaluateMove(computerPlayer.CreateMoveModel(6, "X", gameController.gameBoard.Spaces), 6, "X");
             Assert.AreEqual(63, moveEval);
 
         }
@@ -147,8 +135,7 @@ namespace Tests
             //   | |
             //   |X|
             //   | |
-            var space = gameController.buttonList[4].GetComponent<GridSpace>();
-            Assert.AreEqual(-314, computerPlayer.CalculateDecisionScore(space, "X"));
+            Assert.AreEqual(-8, computerPlayer.CalculateDecisionScore(4, "X"));
 
         }
 
@@ -163,8 +150,7 @@ namespace Tests
             //  X| |
             //   | |
             //   | |
-            var space = gameController.buttonList[0].GetComponent<GridSpace>();
-            Assert.AreEqual(-398, computerPlayer.CalculateDecisionScore(space, "X"));
+            Assert.AreEqual(-12, computerPlayer.CalculateDecisionScore(0, "X"));
         }
 
 
@@ -179,8 +165,7 @@ namespace Tests
             //   | |
             //  X| |
             //   | |
-            var space = gameController.buttonList[3].GetComponent<GridSpace>();
-            Assert.AreEqual(-434, computerPlayer.CalculateDecisionScore(space, "X"));
+            Assert.AreEqual(-16, computerPlayer.CalculateDecisionScore(3, "X"));
 
         }
 
@@ -206,12 +191,12 @@ namespace Tests
             //   | |
             //  X| |
             //   | |
+            var center = computerPlayer.CalculateDecisionScore(4, "X");
+            var corner = computerPlayer.CalculateDecisionScore(0, "X");
+            var side = computerPlayer.CalculateDecisionScore(3, "X");
 
-            var space1 = gameController.buttonList[4].GetComponent<GridSpace>();
-            var space2 = gameController.buttonList[0].GetComponent<GridSpace>();
-            var space3 = gameController.buttonList[3].GetComponent<GridSpace>();
-            Assert.Greater(computerPlayer.CalculateDecisionScore(space1, "X"), computerPlayer.CalculateDecisionScore(space2, "X"));
-            Assert.Greater(computerPlayer.CalculateDecisionScore(space2, "X"), computerPlayer.CalculateDecisionScore(space3, "X"));
+            Assert.Greater(center, corner);
+            Assert.Greater(corner, side);
 
         }
 
@@ -219,10 +204,10 @@ namespace Tests
         public void CalculateDecisionScore2a()
         {
             SetupHumanVsComputerGame();
-            gameController.SetSpaceAtIndex(0, "X");
-            gameController.SetSpaceAtIndex(4, "O");
-            gameController.SetSpaceAtIndex(8, "X");
-            gameController.SetSpaceAtIndex(2, "O");
+            gameController.MakeMove(0, "X");
+            gameController.MakeMove(4, "O");
+            gameController.MakeMove(8, "X");
+            gameController.MakeMove(2, "O");
 
             //  X| |O
             //   |O|
@@ -232,9 +217,8 @@ namespace Tests
             //  X|O|
             //   | |X
 
-            // Check move
-            var space = gameController.buttonList[3].GetComponent<GridSpace>();
-            Assert.AreEqual(-189, computerPlayer.CalculateDecisionScore(space, "X"));
+            // Loss
+            Assert.AreEqual(-108, computerPlayer.CalculateDecisionScore(3, "X"));
 
         }
 
@@ -242,10 +226,10 @@ namespace Tests
         public void CalculateDecisionScore2b()
         {
             SetupHumanVsComputerGame();
-            gameController.SetSpaceAtIndex(0, "X");
-            gameController.SetSpaceAtIndex(4, "O");
-            gameController.SetSpaceAtIndex(8, "X");
-            gameController.SetSpaceAtIndex(2, "O");
+            gameController.MakeMove(0, "X");
+            gameController.MakeMove(4, "O");
+            gameController.MakeMove(8, "X");
+            gameController.MakeMove(2, "O");
 
             //  X| |O
             //   |O|
@@ -255,8 +239,7 @@ namespace Tests
             //   |O|
             //  X| |X
 
-            var space = gameController.buttonList[6].GetComponent<GridSpace>();
-            Assert.AreEqual(-126, computerPlayer.CalculateDecisionScore(space, "X"));
+            Assert.AreEqual(63, computerPlayer.CalculateDecisionScore(6, "X"));
 
         }
 
@@ -264,10 +247,10 @@ namespace Tests
         public void CalculateDecisionScore2Alt()
         {
             SetupHumanVsComputerGame();
-            gameController.SetSpaceAtIndex(0, "X");
-            gameController.SetSpaceAtIndex(4, "O");
-            gameController.SetSpaceAtIndex(8, "X");
-            gameController.SetSpaceAtIndex(2, "O");
+            gameController.MakeMove(0, "X");
+            gameController.MakeMove(4, "O");
+            gameController.MakeMove(8, "X");
+            gameController.MakeMove(2, "O");
 
             //  X| |O
             //   |O|
@@ -285,10 +268,8 @@ namespace Tests
             //  X|O|
             //   | |X
 
-            var space = gameController.buttonList[6].GetComponent<GridSpace>();
-            var cornerMove = computerPlayer.CalculateDecisionScore(space, "X");
-            var space2 = gameController.buttonList[3].GetComponent<GridSpace>();
-            var sideMove = computerPlayer.CalculateDecisionScore(space2, "X");
+            var cornerMove = computerPlayer.CalculateDecisionScore(6, "X");
+            var sideMove = computerPlayer.CalculateDecisionScore(3, "X");
 
             Assert.That(cornerMove, Is.GreaterThan(sideMove));
 

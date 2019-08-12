@@ -20,8 +20,9 @@ public class GridSpace : MonoBehaviour
 
     public void SetSpace() 
     {
-        AddGameMarker(gameController.GetCurrentPlayer().gameMarker);
         button.interactable = false;
+        gameController.MakeMove(id, gameController.GetCurrentPlayer().gameMarker);
+        AddGameMarker(gameController.GetCurrentPlayer().gameMarker);
         gameController.EndTurn();
     }
 
